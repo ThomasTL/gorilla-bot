@@ -1,0 +1,16 @@
+{
+  "name": "trademonkeysignals",
+  "version": "0.1.0",
+  "description": "Trading signals for cryptocurrency trading",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "trading",
+    "signals",
+    "cryptocurrency"
+  ],
+  "author": "Thomas Tarpin-Lyonnet",
+  "license": "MIT"
+}
