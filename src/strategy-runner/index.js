@@ -1,5 +1,5 @@
 const colors = require('colors');
-const Exchange = require('../exchange');
+const ExchangeFactory = require('../exchange');
 const StrategyFactory = require('../strategy');
 
 function timeout(seconds) {
@@ -8,8 +8,8 @@ function timeout(seconds) {
 }
 
 class StrategyRunner {
-    constructor({strategy}) {
-        this.exchange = new Exchange();
+    constructor({strategy, exchange}) {
+        this.exchange = new ExchangeFactory(exchange);
         this.strategy = new StrategyFactory({
             sendBuySignal: async () => { this.sendBuySignal() },
             sendSellSignal: async () => { this.sendSellSignal() },

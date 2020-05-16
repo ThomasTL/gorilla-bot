@@ -1,4 +1,3 @@
-const Strategy = require('./strategy');
 const Rebound = require('./rebound');
 
 const StrategyFactory = function(data, type) {

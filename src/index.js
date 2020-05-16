@@ -1,6 +1,12 @@
-const app = require('./app');
+const color = require('colors');
+const StrategyRunner = require('../src/strategy-runner');
 
-app.start();
+strategyRunner = new StrategyRunner({
+    strategy: 'Rebound',
+    exchange: 'Binance'
+});
 
-
+strategyRunner.run({
+    symbol: 'RCNBTC'
+});
 

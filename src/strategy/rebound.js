@@ -49,11 +49,11 @@ class Rebound extends Strategy {
         console.log(`% change, 3 candles: ${ tools.colorNumber(percentChangeLastThree * 100) }\n`);
 
         if(this.candlesticks[2].percentChange() <= 0) {
-            this.onBuy();
+            this.sendBuySignal();
         }
 
         if(this.candlesticks[2].percentChange() > 0) { 
-            this.onSell();
+            this.sendSellSignal();
         }
          
         console.log('------------------------------------'.yellow.inverse);  
