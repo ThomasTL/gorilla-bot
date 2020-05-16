@@ -1,8 +1,8 @@
 
 class Strategy {
-    constructor({onBuy, onSell, exchange}) {
-        this.onBuy = onBuy;
-        this.onSell = onSell;
+    constructor({sendBuySignal, sendSellSignal, exchange}) {
+        this.sendBuySignal = sendBuySignal;
+        this.sendSellSignal = sendSellSignal;
         this.exchange = exchange;
     }
 

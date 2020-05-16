@@ -11,8 +11,8 @@ class StrategyRunner {
     constructor({strategy}) {
         this.exchange = new Exchange();
         this.strategy = new StrategyFactory({
-            onBuy: async () => { this.onBuy() },
-            onSell: async () => { this.onSell() },
+            sendBuySignal: async () => { this.sendBuySignal() },
+            sendSellSignal: async () => { this.sendSellSignal() },
             exchange: this.exchange
         }, strategy);
 
@@ -34,13 +34,13 @@ class StrategyRunner {
         });
     }
 
-    onBuy() { 
+    sendBuySignal() { 
         console.log('**************'.green.inverse);
         console.log('BUY BUY BUY'.green);
         console.log('**************\n'.green.inverse);
     }
 
-    onSell() {
+    sendSellSignal() {
         console.log('**************'.red.inverse);
         console.log('SELL SELL SELL'.red);
         console.log('**************\n'.red.inverse);
