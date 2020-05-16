@@ -1,3 +1,5 @@
 TMS.code-workspace
 node_modules/ 
-
+src/app-config-prod.json
+.vscode
+package-lock.json
