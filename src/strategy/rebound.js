@@ -21,35 +21,43 @@ class Rebound extends Strategy {
     }
 
     async evaluate({symbol, period}) {
+        let error = false;
         // Get the candles
-        const limit = 5;
+        //const limit = 5;
         this.candlesticks = await this.exchange.getCandleStricks({
             symbol: symbol,
             period: this.period,
             limit: this.maxCandles
         });
 
-        console.log(symbol.magenta);
+        if(this.candlesticks.length === this.maxCandles) {
+            console.log(symbol.magenta);
 
-        let percentChangeLastThree = 0;
-        this.candlesticks.forEach((candle, index) => {
-            percentChangeLastThree += candle.percentChange();
-            console.log(`% change, candle[${ index }]: ${ tools.colorNumber(candle.percentChange() * 100) }`);
-        });
-        console.log(`% change, ${ this.candlesticks.length } candles: ${ tools.colorNumber(percentChangeLastThree * 100) }\n`);
+            let percentChangeLastThree = 0;
+            this.candlesticks.forEach((candle, index) => {
+                percentChangeLastThree += candle.percentChange();
+                console.log(`% change, candle[${ index }]: ${ tools.colorNumber(candle.percentChange() * 100) }`);
+            });
+            console.log(`% change, ${ this.candlesticks.length } candles: ${ tools.colorNumber(percentChangeLastThree * 100) }\n`);
 
-        if(this.candlesticks[2].percentChange() <= 0) {
-            this.sendBuySignal();
-        }
+            if(this.candlesticks[this.maxCandles-1].percentChange() <= 0) {
+                this.sendBuySignal();
+            }
 
-        if(this.candlesticks[2].percentChange() > 0) { 
-            this.sendSellSignal();
+            if(this.candlesticks[this.maxCandles-1].percentChange() > 0) { 
+                this.sendSellSignal();
+            }
+        } else {
+            console.log('Rebound strategy cannot be evaluated.'.red.inverse);
+            error = true;
         }
          
         console.log('------------------------------------'.yellow.inverse);  
 
         // Compute the needed tech indicators
         // Set buy or sell signal
+
+        return error;
     }    
 }
 

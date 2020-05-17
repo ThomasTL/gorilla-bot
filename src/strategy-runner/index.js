@@ -16,7 +16,7 @@ class StrategyRunner {
             exchange: this.exchange,
             param: {
                 period: '5m',
-                maxCandles: 5
+                maxCandles: 3
             }
         }, strategyType);
 
@@ -31,12 +31,16 @@ class StrategyRunner {
     }
 
     async runStrategy({symbol}) {
+        let error = false;
         const now = new Date();
         console.log(now.toString().green);
 
-        await this.strategy.evaluate({
+        error = await this.strategy.evaluate({
             symbol: symbol
         });
+
+        if(error)
+            return;
 
         await timeout(300); 
 

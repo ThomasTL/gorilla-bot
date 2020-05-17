@@ -2,7 +2,6 @@
 class Exchange {
     constructor() {
     }
-
     async getCandleStricks ({symbol, period, limit}) {
     }
 }
