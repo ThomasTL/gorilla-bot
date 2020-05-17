@@ -1,5 +1,5 @@
 const Strategy = require('./strategy');
-const Candlestick = require('../models/candlestick');
+//const Candlestick = require('../models/candlestick');
 const tools = require('../tools');
 
 /*
@@ -14,39 +14,29 @@ const tools = require('../tools');
 */
 
 class Rebound extends Strategy {
+    constructor(data) {
+        super(data);
+        this.period = data.param.period;
+        this.maxCandles = data.param.maxCandles;
+    }
 
     async evaluate({symbol, period}) {
         // Get the candles
-        const limit = 3;
-        var candles = await this.exchange.getCandles({
+        const limit = 5;
+        this.candlesticks = await this.exchange.getCandleStricks({
             symbol: symbol,
-            period: period,
-            limit: limit
+            period: this.period,
+            limit: this.maxCandles
         });
 
-        this.candlesticks = candles.map((candle) => {
-            return new Candlestick({
-                symbol: symbol,
-                time: new Date(candle.openTime), 
-                open: parseFloat(candle.open), 
-                high: parseFloat(candle.high), 
-                low: parseFloat(candle.low), 
-                close: parseFloat(candle.close), 
-                period: period, 
-                volumeQuote: parseFloat(candle.quoteAssetVolume)
-            })
-        })
+        console.log(symbol.magenta);
 
-        const percentChangeLastCandle = this.candlesticks[2].percentChange();
-        var percentChangeLastThree = 0;
-        this.candlesticks.forEach(candle => {
+        let percentChangeLastThree = 0;
+        this.candlesticks.forEach((candle, index) => {
             percentChangeLastThree += candle.percentChange();
+            console.log(`% change, candle[${ index }]: ${ tools.colorNumber(candle.percentChange() * 100) }`);
         });
-        //console.log(this.candlesticks);
-        console.log(`\n% change, candle[0]: ${ tools.colorNumber(this.candlesticks[0].percentChange() * 100) }`);
-        console.log(`% change, candle[1]: ${ tools.colorNumber(this.candlesticks[1].percentChange() * 100) }`);
-        console.log(`% change, candle[2]: ${ tools.colorNumber(this.candlesticks[2].percentChange() * 100) }`);
-        console.log(`% change, 3 candles: ${ tools.colorNumber(percentChangeLastThree * 100) }\n`);
+        console.log(`% change, ${ this.candlesticks.length } candles: ${ tools.colorNumber(percentChangeLastThree * 100) }\n`);
 
         if(this.candlesticks[2].percentChange() <= 0) {
             this.sendBuySignal();

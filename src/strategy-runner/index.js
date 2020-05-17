@@ -8,42 +8,49 @@ function timeout(seconds) {
 }
 
 class StrategyRunner {
-    constructor({strategy, exchange}) {
+    constructor({strategyType, exchange}) {
         this.exchange = new ExchangeFactory(exchange);
         this.strategy = new StrategyFactory({
             sendBuySignal: async () => { this.sendBuySignal() },
             sendSellSignal: async () => { this.sendSellSignal() },
-            exchange: this.exchange
-        }, strategy);
+            exchange: this.exchange,
+            param: {
+                period: '5m',
+                maxCandles: 5
+            }
+        }, strategyType);
 
     }
 
     async run({symbol}) {
+        this.runStrategy({
+            symbol: symbol
+        });
+
+        //console.log('!!!! AFTER STRATEGY IS RUNNING !!!!'.blue.inverse);
+    }
+
+    async runStrategy({symbol}) {
         const now = new Date();
         console.log(now.toString().green);
 
         await this.strategy.evaluate({
-            symbol: symbol,
-            period: '5m'
+            symbol: symbol
         });
 
-        await timeout(300);
+        await timeout(300); 
 
-        await this.run({
+        await this.runStrategy({
             symbol: symbol
         });
     }
 
     sendBuySignal() { 
-        console.log('**************'.green.inverse);
-        console.log('BUY BUY BUY'.green);
-        console.log('**************\n'.green.inverse);
+        console.log('!!!! BUY BUY BUY !!!!\n'.green);
     }
 
     sendSellSignal() {
-        console.log('**************'.red.inverse);
-        console.log('SELL SELL SELL'.red);
-        console.log('**************\n'.red.inverse);
+        console.log('!!!! SELL SELL SELL !!!!\n'.red);
     }
 }
 

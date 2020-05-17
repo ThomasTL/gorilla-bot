@@ -2,7 +2,7 @@ const color = require('colors');
 
 module.exports = {
     colorNumber: (number) => {
-        var coloredNumber = number.toFixed(2);
+        let coloredNumber = number.toFixed(2);
         if(number < 0) {
             coloredNumber = coloredNumber.red;
         } else {
