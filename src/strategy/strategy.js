@@ -1,8 +1,9 @@
 
 class Strategy {
-    constructor({sendBuySignal, sendSellSignal, exchange}) {
+    constructor({sendBuySignal, sendSellSignal, runStrategy, exchange}) {
         this.sendBuySignal = sendBuySignal;
         this.sendSellSignal = sendSellSignal;
+        this.runStrategy = runStrategy;
         this.exchange = exchange;
     }
 

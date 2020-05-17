@@ -1,6 +1,10 @@
 const Strategy = require('./strategy');
-//const Candlestick = require('../models/candlestick');
 const tools = require('../tools');
+
+function timeout(seconds) {
+    const ms = seconds * 1000;
+    return new Promise(resolve => setTimeout(resolve, ms))
+}
 
 /*
     Strategy needs to be given:
@@ -20,10 +24,8 @@ class Rebound extends Strategy {
         this.maxCandles = data.param.maxCandles;
     }
 
-    async evaluate({symbol, period}) {
+    async evaluate({symbol}) {
         let error = false;
-        // Get the candles
-        //const limit = 5;
         this.candlesticks = await this.exchange.getCandleStricks({
             symbol: symbol,
             period: this.period,
@@ -38,24 +40,23 @@ class Rebound extends Strategy {
                 percentChangeLastThree += candle.percentChange();
                 console.log(`% change, candle[${ index }]: ${ tools.colorNumber(candle.percentChange() * 100) }`);
             });
-            console.log(`% change, ${ this.candlesticks.length } candles: ${ tools.colorNumber(percentChangeLastThree * 100) }\n`);
+            console.log(`% change, ${ this.candlesticks.length } candles: ${ tools.colorNumber(percentChangeLastThree * 100) }`);
 
             if(this.candlesticks[this.maxCandles-1].percentChange() <= 0) {
-                this.sendBuySignal();
+                this.sendBuySignal(symbol);
             }
 
             if(this.candlesticks[this.maxCandles-1].percentChange() > 0) { 
-                this.sendSellSignal();
+                this.sendSellSignal(symbol);
             }
+
+            console.log('\n------------------------------------'.yellow.inverse);
+            await timeout(300);
+            await this.runStrategy(symbol);
         } else {
-            console.log('Rebound strategy cannot be evaluated.'.red.inverse);
+            console.log('Rebound strategy cannot be evaluated. No more data!'.red.inverse);
             error = true;
         }
-         
-        console.log('------------------------------------'.yellow.inverse);  
-
-        // Compute the needed tech indicators
-        // Set buy or sell signal
 
         return error;
     }    
