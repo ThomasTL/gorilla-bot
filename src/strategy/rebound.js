@@ -38,9 +38,9 @@ class Rebound extends Strategy {
             let percentChangeLastThree = 0;
             this.candlesticks.forEach((candle, index) => {
                 percentChangeLastThree += candle.percentChange();
-                console.log(`% change, candle[${ index }]: ${ tools.colorNumber(candle.percentChange() * 100) }`);
+                console.log(`% change, candle[${ index }]: ${ tools.colorNumber(candle.percentChange()) }`);
             });
-            console.log(`% change, ${ this.candlesticks.length } candles: ${ tools.colorNumber(percentChangeLastThree * 100) }`);
+            console.log(`% change, ${ this.candlesticks.length } candles: ${ tools.colorNumber(percentChangeLastThree) }`);
 
             if(this.candlesticks[this.maxCandles-1].percentChange() <= 0) {
                 this.sendBuySignal(symbol);
@@ -52,7 +52,7 @@ class Rebound extends Strategy {
 
             console.log('\n------------------------------------'.yellow.inverse);
             await timeout(300);
-            await this.runStrategy(symbol);
+            await this.evaluate({symbol: symbol});
         } else {
             console.log('Rebound strategy cannot be evaluated. No more data!'.red.inverse);
             error = true;
