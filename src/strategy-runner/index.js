@@ -3,41 +3,60 @@ const ExchangeFactory = require('../exchange');
 const StrategyFactory = require('../strategy');
 const Position = require('../models/position');
 
-function timeout(seconds) {
-    const ms = seconds * 1000;
-    return new Promise(resolve => setTimeout(resolve, ms))
-}
-
 class StrategyRunner {
-    constructor({strategyType, exchange}) {
-        this.exchange = new ExchangeFactory(exchange);
+    constructor({strategy, exchangeType}) {
+        this.exchange = new ExchangeFactory({
+            setTickers: async (tickers) => { this.setTickers(tickers) }, 
+            setPrices: async (prices) => { this.setPrices(prices) },
+            type: exchangeType
+        });
         this.strategy = new StrategyFactory({
             sendBuySignal: async (symbol) => { this.sendBuySignal(symbol) },
             sendSellSignal: async (symbol) => { this.sendSellSignal(symbol) },
+            sendTradeSignal: async (symbol) => { this.sendTradeSignal(symbol) },
             exchange: this.exchange,
-            param: {
-                period: '5m',
-                maxCandles: 4
-            }
-        }, strategyType);
+            config: strategy.config
+        }, strategy.type);
         this.openedPositions = [];
         this.closedPositions = [];
+        this.eligibleSymbols = [];
+        this.eligiblePrices = [];
     }
 
-    async run({symbol}) {
+    async run({quoteSymbol, quoteMinVolume}) {
         const now = new Date();
         console.log(now.toString().green + '\n');
-        this.strategy.evaluate({ symbol: symbol });
+
+        this.exchange.getTickers({
+            quoteSymbol: quoteSymbol,
+            quoteMinVolume: quoteMinVolume 
+        });
+
+        //while(this.eligibleSymbols.length === 0){}
+
+        this.exchange.getPrices(this.eligibleSymbols);
+
+/*        
+        this.eligibleSymbols.forEach(symbol => {
+            this.strategy.evaluate({
+                symbol: symbol
+            });
+        });
+*/
     }
 
     async sendBuySignal(symbol) { 
+        // TODO: Need to remove this constant and set this as strategy config
+        const amtToInvest = 40;
+
         const foundPosition = this.openedPositions.find(position => position.symbol === symbol);
         if(typeof foundPosition === 'undefined') {
             let position = new Position(symbol);
+            const symbolPrice = this.eligiblePrices.find(price => { price.symbol === symbol});
             position.openPosition({
                 date: new Date(),
-                buyPrice: 9400, // TODO
-                volume: 0.0015 // TODO
+                buyPrice: symbolPrice.price,
+                volume: (amtToInvest / symbolPrice.price)
             });
             this.openedPositions.push(position);
             console.log(`> BUY ${ symbol }`.green);
@@ -50,9 +69,10 @@ class StrategyRunner {
     async sendSellSignal(symbol) {
         const foundPosition = this.openedPositions.find(position => position.symbol === symbol);
         if(typeof foundPosition !== 'undefined') {
+            const symbolPrice = this.eligiblePrices.find(price => { price.symbol === symbol});
             foundPosition.closePosition({
                 date: new Date(),
-                sellPrice: 9800 // TODO
+                sellPrice: symbolPrice.price
             });
             this.closedPositions.push(foundPosition);
             this.openedPositions = this.openedPositions.filter(position => position.symbol !== foundPosition.symbol);
@@ -61,6 +81,21 @@ class StrategyRunner {
         } else {
             console.log(`> ${ symbol }, no position opened. Nothing to sell.`.red); 
         }
+    }
+
+    async sendTradeSignal(symbol) {
+        
+    }
+
+    async setTickers(tickers) {
+        this.eligibleTickers = tickers;
+        tickers.forEach(ticker => {
+            this.eligibleSymbols.push(ticker.symbol);
+        });
+    }
+
+    async setPrices(symbolPrice) {
+        this.eligiblePrices = symbolPrice;
     }
 }
 

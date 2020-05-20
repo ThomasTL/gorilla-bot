@@ -1,7 +1,7 @@
 const Strategy = require('./strategy');
-const tools = require('../tools');
+const util = require('../util');
 
-function timeout(seconds) {
+function timeout (seconds) {
     const ms = seconds * 1000;
     return new Promise(resolve => setTimeout(resolve, ms))
 }
@@ -20,13 +20,13 @@ function timeout(seconds) {
 class Rebound extends Strategy {
     constructor(data) {
         super(data);
-        this.period = data.param.period;
-        this.maxCandles = data.param.maxCandles;
+        this.period = data.config.period;
+        this.maxCandles = data.config.maxCandles;
     }
 
     async evaluate({symbol}) {
         let error = false;
-        this.candlesticks = await this.exchange.getCandleStricks({
+        this.candlesticks = await this.exchange.getCandleSticks({
             symbol: symbol,
             period: this.period,
             limit: this.maxCandles
@@ -38,19 +38,20 @@ class Rebound extends Strategy {
             let percentChangeLastThree = 0;
             this.candlesticks.forEach((candle, index) => {
                 percentChangeLastThree += candle.percentChange();
-                console.log(`% change, candle[${ index }]: ${ tools.colorNumber(candle.percentChange()) }`);
+                console.log(`% change, candle[${ index }]: ${ util.colorNumber(candle.percentChange()) }`);
             });
-            console.log(`% change, ${ this.candlesticks.length } candles: ${ tools.colorNumber(percentChangeLastThree) }`);
+            console.log(`% change, ${ this.candlesticks.length } candles: ${ util.colorNumber(percentChangeLastThree) }`);
 
-            if(this.candlesticks[this.maxCandles-1].percentChange() <= 0) {
+            if(this.candlesticks[this.maxCandles-1].percentChange() <= 5) {
                 this.sendBuySignal(symbol);
             }
-
+/* 
             if(this.candlesticks[this.maxCandles-1].percentChange() > 0) { 
                 this.sendSellSignal(symbol);
             }
-
+*/
             console.log('\n------------------------------------'.yellow.inverse);
+            // TODO: To change the following. This is not the right way to do it.
             await timeout(300);
             await this.evaluate({symbol: symbol});
         } else {

@@ -5,7 +5,7 @@ class Runnable {
     }
 
     async run({symbol}) {}
-    async runStrategy({symbol}) {}
+    //async runStrategy({symbol}) {}
     async sendBuySignal() {}
     async sendSellSignal () {}
 }

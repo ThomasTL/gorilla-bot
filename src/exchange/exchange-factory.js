@@ -1,10 +1,13 @@
 const BinanceEx = require('./binance');
 const Backtesting = require('./backtesting');
 
-const ExchangeFactory = function(type) {
-    if(type === 'Binance') {
-        return new BinanceEx();
-    } else if(type === 'Backtesting') {
+const ExchangeFactory = function(data) {
+    if(data.type === 'Binance') {
+        return new BinanceEx({
+            setTickers: data.setTickers, 
+            setPrices: data.setPrices
+        });
+    } else if(data.type === 'Backtesting') {
         return new Backtesting();
     }
 }

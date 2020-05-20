@@ -1,5 +1,7 @@
 const Exchange = require('./exchange');
 const Candlestick = require('../models/candlestick');
+const Ticker = require('../models/ticker');
+const Price = require('../models/price');
 const config = require('../config');
 const Binance = require('binance-api-node').default;
 
@@ -7,15 +9,15 @@ const apiKey = config.get('BINANCE_API_KEY');
 const apiSecret = config.get('BINANCE_API_SECRET');
 
 class BinanceEx extends Exchange {
-    constructor() {
-        super();
+    constructor(data) {
+        super(data);
         this.client = Binance({
             apiKey: apiKey,
             apiSecret: apiSecret
         });
     }
 
-    async getCandleStricks ({symbol, period, limit}) {
+    async getCandleSticks({symbol, period, limit}) {
         const candles = await this.client.candles ({
             symbol: symbol,
             interval: period,
@@ -34,8 +36,52 @@ class BinanceEx extends Exchange {
                 volumeQuote: parseFloat(candle.quoteAssetVolume)
             });
         });
-
         return candleSticks;
+    }
+
+    async getFilteredLastPrices(tickers) {
+        const allLastPrices = await this.client.prices();
+        const filteredPrices = tickers.map(ticker => {
+            return new Price({
+                symbol: ticker.symbol,
+                price: allLastPrices[ticker.symbol] 
+            });
+        });
+        return filteredPrices;
+    }
+
+    async getPrices(symbols) {
+        if(symbols.length > 0) {
+            this.client.ws.candles(symbols, '1m', candle => {
+                this.setPrices(new Price({
+                    symbol: candle.symbol,
+                    price: candle.close
+                }));
+            });
+        }
+    }
+
+    async getTickers({quoteSymbol, quoteMinVolume}) {
+        const cleanTickers = await this.client.ws.allTickers(tickers => {
+            const filteredTickers = tickers.filter(ticker => {
+                let filterIn = false;
+                if(ticker.symbol.slice(ticker.symbol.length - quoteSymbol.length) === quoteSymbol) {
+                    if(parseFloat(ticker.volumeQuote) >= quoteMinVolume) {
+                        filterIn = true;
+                    }
+                }
+                return filterIn;
+            });
+            const allTickers = filteredTickers.map(ticker => {
+                return new Ticker({
+                    symbol: ticker.symbol,
+                    priceChange:ticker.priceChange, 
+                    priceChangePercent: ticker.priceChangePercent, 
+                    quoteVolume: ticker.volumeQuote
+                })
+            });            
+            this.setTickers(allTickers);
+        });
     }
 }
 

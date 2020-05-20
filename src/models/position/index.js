@@ -1,18 +1,10 @@
+const util = require('../../util');
 
 class Position {
     constructor(symbol) {
         this.symbol = symbol;
 
-        this.entryDate = 'NA';
-        this.buyPrice = 0;
-        this.volumeBase = 0;
-        this.boughtAmt = 0;
-        this.currentPrice = 0;
         this.currentPnL = 0;
-
-        this.exitDate = 'NA';
-        this.sellPrice = 0;
-        this.soldAmt = 0;
         this.realisedPnL = 0;
     }
 
@@ -43,30 +35,38 @@ class Position {
     getCurrentPercentPnL() {
         return (this.currentPnL / this.boughtAmt) * 100;
     }
-
-    // TODO: To review this method and make it more fail safe / robust
+    
     toString() {
+        let entryDate = util.defaultIfNan(this.entryDate, 'NA');
+        let buyPrice = util.defaultIfNan(this.buyPrice, 0);
+        let volumeBase = util.defaultIfNan(this.volumeBase, 0);
+        let boughtAmt = util.defaultIfNan(this.boughtAmt, 0);
+        let currentPrice = util.defaultIfNan(this.currentPrice, 0);
+        let currentPnL = util.defaultIfNan(this.currentPnL, 0);
+        let exitDate = util.defaultIfNan(this.exitDate, 'NA');
+        let sellPrice = util.defaultIfNan(this.sellPrice, 0);
+        let soldAmt = util.defaultIfNan(this.soldAmt, 0);
+        let realisedPnL = util.defaultIfNan(this.realisedPnL, 0);
+
         console.log('------------------------------------------------------'.yellow.inverse);
         console.log('+ Symbol'.green);
         console.log(`+--- ${ this.symbol }`)
         console.log('+ Entry'.green);
-        console.log(`+--- Date             : ${ this.entryDate }`);
-        console.log(`+--- Buy price        : ${ this.buyPrice }`);
-        console.log(`+--- Volume           : ${ this.volumeBase }`);
-        console.log(`+--- Amount           : ${ this.boughtAmt.toFixed(2) }`);
+        console.log(`+--- Date             : ${ entryDate }`);
+        console.log(`+--- Buy price        : ${ buyPrice }`);
+        console.log(`+--- Volume           : ${ volumeBase }`);
+        console.log(`+--- Amount           : ${ boughtAmt.toFixed(2) }`);
         console.log('+ Current'.green);
-        console.log(`+--- Current price    : ${ this.currentPrice.toFixed(2) }`);
-        console.log(`+--- Current P&L      : ${ this.currentPnL.toFixed(2) }`);
+        console.log(`+--- Current price    : ${ currentPrice.toFixed(2) }`);
+        console.log(`+--- Current P&L      : ${ currentPnL.toFixed(2) }`);
         console.log(`+--- Current P&L (%)  : ${ this.getCurrentPercentPnL().toFixed(2) } %`);        
         console.log('+ Exit'.green);
-        console.log(`+--- Date             : ${ this.exitDate }`);
-        console.log(`+--- Sell price       : ${ this.sellPrice }`);
-        console.log(`+--- Volume           : ${ this.volumeBase }`);
-        console.log(`+--- Amount           : ${ this.soldAmt.toFixed(2) }`);
-        console.log(`+--- Realised P&L     : ${ this.realisedPnL.toFixed(2) }`);
+        console.log(`+--- Date             : ${ exitDate }`);
+        console.log(`+--- Sell price       : ${ sellPrice }`);
+        console.log(`+--- Volume           : ${ volumeBase }`);
+        console.log(`+--- Amount           : ${ soldAmt.toFixed(2) }`);
+        console.log(`+--- Realised P&L     : ${ realisedPnL.toFixed(2) }`);
         console.log(`+--- Realised P&L (%) : ${ this.getRealisedPercentPnL().toFixed(2) } %`); 
-
-
     }
 }
 

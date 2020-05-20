@@ -5,21 +5,30 @@ console.log('\n+---------------------------------+'.white);
 console.log('|   Gorilla Signals is starting   |'.white);
 console.log('+---------------------------------+\n'.white);
 
-const pairSymbol = 'LTCBTC';
-const strategy = 'Rebound';
-const exchange = 'Binance';
+const quoteSymbol = 'USDT';
+const quoteMinVolume = 800000
+const exchangeType = 'Binance';
+const strategy = {
+    type: 'Rebound',
+    config: {
+        period: '5m',
+        maxCandles: 4
+    }
+}
 
-console.log(`+------- Settings ------+`.white);
-console.log('| Pair    :'.white + ` ${ pairSymbol }`.yellow);
-console.log('| Strategy:'.white + ` ${ strategy }`.yellow);
-console.log('| Exchange:'.white + ` ${ exchange }`.yellow);
-console.log('+-----------------------+\n'.white);
+console.log(`+--------- Settings --------+`.white);
+console.log('| Quote Symbol   :'.white + ` ${ quoteSymbol }`.yellow);
+console.log('| Quote Min Vol. :'.white + ` ${ quoteMinVolume }`.yellow);
+console.log('| Strategy       :'.white + ` ${ strategy.type }`.yellow);
+console.log('| Exchange       :'.white + ` ${ exchangeType }`.yellow);
+console.log('+---------------------------+\n'.white);
 
 strategyRunner = new StrategyRunner({
-    strategyType: strategy,
-    exchange: exchange
+    strategy: strategy,
+    exchangeType: exchangeType
 });
 
 strategyRunner.run({
-    symbol: pairSymbol
+    quoteSymbol: quoteSymbol,
+    quoteMinVolume: quoteMinVolume
 });
