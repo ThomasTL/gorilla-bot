@@ -57,7 +57,7 @@ class Position {
         console.log(`+--- Volume           : ${ volumeBase }`);
         console.log(`+--- Amount           : ${ boughtAmt.toFixed(2) }`);
         console.log('+ Current'.green);
-        console.log(`+--- Current price    : ${ currentPrice.toFixed(2) }`);
+        console.log(`+--- Current price    : ${ currentPrice }`);
         console.log(`+--- Current P&L      : ${ currentPnL.toFixed(2) }`);
         console.log(`+--- Current P&L (%)  : ${ this.getCurrentPercentPnL().toFixed(2) } %`);        
         console.log('+ Exit'.green);

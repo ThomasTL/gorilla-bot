@@ -39,30 +39,43 @@ class BinanceEx extends Exchange {
         return candleSticks;
     }
 
-    async getFilteredLastPrices(tickers) {
-        const allLastPrices = await this.client.prices();
-        const filteredPrices = tickers.map(ticker => {
-            return new Price({
-                symbol: ticker.symbol,
-                price: allLastPrices[ticker.symbol] 
-            });
-        });
-        return filteredPrices;
-    }
+    // async getFilteredLastPrices(tickers) {
+    //     const allLastPrices = await this.client.prices();
+    //     const filteredPrices = tickers.map(ticker => {
+    //         return new Price({
+    //             symbol: ticker.symbol,
+    //             price: allLastPrices[ticker.symbol] 
+    //         });
+    //     });
+    //     return filteredPrices;
+    // }
+
+    // async getPrices_a(symbols) {
+    //     if(symbols.length === 0) {
+    //         symbols = "BTCUSDT";
+    //     }
+    //     this.client.ws.candles(symbols, '1m', candle => {
+    //         console.log(candle);
+    //         this.updateSymbolPrices(new Price({
+    //             symbol: candle.symbol,
+    //             price: candle.close
+    //         }));
+    //     });        
+    // }
 
     async getPrices(symbols) {
-        if(symbols.length > 0) {
-            this.client.ws.candles(symbols, '1m', candle => {
-                this.setPrices(new Price({
-                    symbol: candle.symbol,
-                    price: candle.close
-                }));
+        const allLastPrices = await this.client.prices();
+        const filteredPrices = symbols.map(symbol => {
+            return new Price({
+                symbol: symbol,
+                price: allLastPrices[symbol] 
             });
-        }
+        });
+        return filteredPrices;       
     }
 
     async getTickers({quoteSymbol, quoteMinVolume}) {
-        const cleanTickers = await this.client.ws.allTickers(tickers => {
+        return this.client.ws.allTickers(tickers => {
             const filteredTickers = tickers.filter(ticker => {
                 let filterIn = false;
                 if(ticker.symbol.slice(ticker.symbol.length - quoteSymbol.length) === quoteSymbol) {
@@ -80,7 +93,7 @@ class BinanceEx extends Exchange {
                     quoteVolume: ticker.volumeQuote
                 })
             });            
-            this.setTickers(allTickers);
+            this.onTick(allTickers);
         });
     }
 }

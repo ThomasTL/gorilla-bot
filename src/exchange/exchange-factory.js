@@ -4,8 +4,8 @@ const Backtesting = require('./backtesting');
 const ExchangeFactory = function(data) {
     if(data.type === 'Binance') {
         return new BinanceEx({
-            setTickers: data.setTickers, 
-            setPrices: data.setPrices
+            onTick: data.onTick, 
+            updateSymbolPrices: data.updateSymbolPrices
         });
     } else if(data.type === 'Backtesting') {
         return new Backtesting();

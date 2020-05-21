@@ -1,8 +1,8 @@
 
 class Exchange {
-    constructor({setTickers, setPrices}) {
-        this.setTickers = setTickers;
-        this.setPrices = setPrices;
+    constructor({onTick, updateSymbolPrices}) {
+        this.onTick = onTick;
+        this.updateSymbolPrices = updateSymbolPrices;
     }
     async getCandleStricks ({symbol, period, limit}) {}
     async getTickers({quoteSymbol, minQuoteVolume}) {}

@@ -25,7 +25,6 @@ class Rebound extends Strategy {
     }
 
     async evaluate({symbol}) {
-        let error = false;
         this.candlesticks = await this.exchange.getCandleSticks({
             symbol: symbol,
             period: this.period,
@@ -33,33 +32,24 @@ class Rebound extends Strategy {
         });
 
         if(this.candlesticks.length === this.maxCandles) {
-            console.log(symbol.magenta);
 
             let percentChangeLastThree = 0;
             this.candlesticks.forEach((candle, index) => {
                 percentChangeLastThree += candle.percentChange();
-                console.log(`% change, candle[${ index }]: ${ util.colorNumber(candle.percentChange()) }`);
             });
-            console.log(`% change, ${ this.candlesticks.length } candles: ${ util.colorNumber(percentChangeLastThree) }`);
 
-            if(this.candlesticks[this.maxCandles-1].percentChange() <= 5) {
+            // Entry point is when the last candle shows a -2% dump or more
+            if(this.candlesticks[this.maxCandles-1].percentChange() <= -2) {
                 this.sendBuySignal(symbol);
             }
-/* 
-            if(this.candlesticks[this.maxCandles-1].percentChange() > 0) { 
+ 
+            // Exit point is when the last candle shows a 1% pump or more
+            if(this.candlesticks[this.maxCandles-1].percentChange() > 1) { 
                 this.sendSellSignal(symbol);
             }
-*/
-            console.log('\n------------------------------------'.yellow.inverse);
-            // TODO: To change the following. This is not the right way to do it.
-            await timeout(300);
-            await this.evaluate({symbol: symbol});
         } else {
-            console.log('Rebound strategy cannot be evaluated. No more data!'.red.inverse);
-            error = true;
+            // TODO: Log that something went wrong with the strategy here
         }
-
-        return error;
     }    
 }
 
