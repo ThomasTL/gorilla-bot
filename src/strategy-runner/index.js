@@ -40,7 +40,7 @@ class StrategyRunner {
 
     async sendBuySignal(symbol) { 
         // TODO: Need to remove this constant and set this as strategy config
-        const amtToInvest = 40;
+        const amtToInvest = 0.005;
 
         const foundPosition = this.openedPositions.find(position => position.symbol === symbol);
         if(typeof foundPosition === 'undefined') {
@@ -70,7 +70,7 @@ class StrategyRunner {
             this.closedPositions.push(foundPosition);
             this.openedPositions = this.openedPositions.filter(position => position.symbol !== foundPosition.symbol);
             console.log(`> SELL ${ symbol }, price: ${ symbolPrice.price }`.red);
-            foundPosition.toString();
+            console.log(foundPosition.toString());
         } else {
             // TODO: Do proper logging to show the reason why we can't close the position.
             //console.log(`> ${ symbol }, no position opened. Nothing to sell.`.red); 
@@ -94,17 +94,22 @@ class StrategyRunner {
         // TODO: To store the 60 min in a constant or get it from the StrategyRunner config
         if(diffMins >= this.mins) {
             this.lastTickTime = now;
-            this.eligibleTickers = tickers;
             this.eligibleSymbols = [];
+            tickers.sort((a, b) =>  b.quoteVolume - a.quoteVolume );
             tickers.forEach(ticker => {
                 this.eligibleSymbols.push(ticker.symbol);
             });
+            this.eligibleTickers = tickers;
             console.log(`Eligible pairs for running the strategy: ${ this.eligibleSymbols.length }`);
             console.log(this.eligibleSymbols);
         }
 
         // TODO: To store the 5 min interval in a constant or to get it from the StrategyRunner config
         if(diffMins >= 5) {
+            console.log(new Date().toString());
+            console.log(`Opened positions: ${ this.openedPositions.length }, Closed positions: ${ this.closedPositions.length }`);
+
+            this.lastTickTime = now;
             this.eligiblePrices = await this.exchange.getPrices(this.eligibleSymbols);
             this.eligibleSymbols.forEach(symbol => {
                 this.strategy.evaluate({

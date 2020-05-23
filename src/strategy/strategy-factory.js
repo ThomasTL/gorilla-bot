@@ -1,8 +1,8 @@
-const Rebound = require('./rebound');
+const SimpleRebound = require('./rebound');
 
 const StrategyFactory = function(data, type) {
-    if(type === 'Rebound'){
-        return new Rebound(data);
+    if(type === 'SimpleRebound'){
+        return new SimpleRebound(data);
     } 
 }
 

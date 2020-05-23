@@ -1,11 +1,6 @@
 const Strategy = require('./strategy');
 const util = require('../util');
 
-function timeout (seconds) {
-    const ms = seconds * 1000;
-    return new Promise(resolve => setTimeout(resolve, ms))
-}
-
 /*
     Strategy needs to be given:
     - Candles or ticker
@@ -17,7 +12,7 @@ function timeout (seconds) {
     The above given the technical indicators
 */
 
-class Rebound extends Strategy {
+class SimpleRebound extends Strategy {
     constructor(data) {
         super(data);
         this.period = data.config.period;
@@ -31,7 +26,7 @@ class Rebound extends Strategy {
             limit: this.maxCandles
         });
 
-        if(this.candlesticks.length === this.maxCandles) {
+        if((this.candlesticks !== undefined) && (this.candlesticks.length === this.maxCandles)) {
 
             let percentChangeLastThree = 0;
             this.candlesticks.forEach((candle, index) => {
@@ -44,13 +39,14 @@ class Rebound extends Strategy {
             }
  
             // Exit point is when the last candle shows a 1% pump or more
-            if(this.candlesticks[this.maxCandles-1].percentChange() > 1) { 
+            if(this.candlesticks[this.maxCandles-1].percentChange() > 1.25) { 
                 this.sendSellSignal(symbol);
             }
         } else {
             // TODO: Log that something went wrong with the strategy here
+            console.log(`Strategy can\'t be evaluated. Pair: ${ symbol }`);
         }
     }    
 }
 
-module.exports = Rebound
+module.exports = SimpleRebound

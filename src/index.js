@@ -5,11 +5,11 @@ console.log('\n+---------------------------------+'.white);
 console.log('|   Gorilla Signals is starting   |'.white);
 console.log('+---------------------------------+\n'.white);
 
-const quoteSymbol = 'BTC';
-const quoteMinVolume = 60
+const quoteSymbol = 'USDT';
+const quoteMinVolume = 800000;
 const exchangeType = 'Binance';
 const strategy = {
-    type: 'Rebound',
+    type: 'SimpleRebound',
     config: {
         period: '5m',
         maxCandles: 4
@@ -31,4 +31,13 @@ strategyRunner = new StrategyRunner({
 strategyRunner.run({
     quoteSymbol: quoteSymbol,
     quoteMinVolume: quoteMinVolume
+});
+
+process.on('SIGINT', function() {
+    console.log('\nBye bye ...'.red);
+    console.log(`Closed positions: ${ strategyRunner.closedPositions.length }`);
+    strategyRunner.closedPositions.forEach(position => {
+        console.log(position.toString());
+    });
+    process.exit();
 });

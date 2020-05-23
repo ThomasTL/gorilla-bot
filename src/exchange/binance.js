@@ -18,59 +18,44 @@ class BinanceEx extends Exchange {
     }
 
     async getCandleSticks({symbol, period, limit}) {
-        const candles = await this.client.candles ({
-            symbol: symbol,
-            interval: period,
-            limit: limit
-        });
-
-        const candleSticks = candles.map((candle) => {
-            return new Candlestick({
+        let candles, candleSticks;
+        try {
+            candles = await this.client.candles({
                 symbol: symbol,
-                time: new Date(candle.openTime), 
-                open: parseFloat(candle.open), 
-                high: parseFloat(candle.high), 
-                low: parseFloat(candle.low), 
-                close: parseFloat(candle.close), 
-                period: period, 
-                volumeQuote: parseFloat(candle.quoteAssetVolume)
+                interval: period,
+                limit: limit
             });
-        });
+            candleSticks = candles.map((candle) => {
+                return new Candlestick({
+                    symbol: symbol,
+                    time: new Date(candle.openTime), 
+                    open: parseFloat(candle.open), 
+                    high: parseFloat(candle.high), 
+                    low: parseFloat(candle.low), 
+                    close: parseFloat(candle.close), 
+                    period: period, 
+                    volumeQuote: parseFloat(candle.quoteAssetVolume)
+                });
+            });            
+        } catch(error) {
+            console.log(error);
+        }
         return candleSticks;
     }
 
-    // async getFilteredLastPrices(tickers) {
-    //     const allLastPrices = await this.client.prices();
-    //     const filteredPrices = tickers.map(ticker => {
-    //         return new Price({
-    //             symbol: ticker.symbol,
-    //             price: allLastPrices[ticker.symbol] 
-    //         });
-    //     });
-    //     return filteredPrices;
-    // }
-
-    // async getPrices_a(symbols) {
-    //     if(symbols.length === 0) {
-    //         symbols = "BTCUSDT";
-    //     }
-    //     this.client.ws.candles(symbols, '1m', candle => {
-    //         console.log(candle);
-    //         this.updateSymbolPrices(new Price({
-    //             symbol: candle.symbol,
-    //             price: candle.close
-    //         }));
-    //     });        
-    // }
-
     async getPrices(symbols) {
-        const allLastPrices = await this.client.prices();
-        const filteredPrices = symbols.map(symbol => {
-            return new Price({
-                symbol: symbol,
-                price: allLastPrices[symbol] 
-            });
-        });
+        let allLastPrices, filteredPrices;
+        try {
+            allLastPrices = await this.client.prices();
+            filteredPrices = symbols.map(symbol => {
+                return new Price({
+                    symbol: symbol,
+                    price: allLastPrices[symbol] 
+                });
+            });            
+        } catch(error) {
+            console.log(error);
+        }
         return filteredPrices;       
     }
 
@@ -99,3 +84,27 @@ class BinanceEx extends Exchange {
 }
 
 module.exports = BinanceEx
+
+    // async getFilteredLastPrices(tickers) {
+    //     const allLastPrices = await this.client.prices();
+    //     const filteredPrices = tickers.map(ticker => {
+    //         return new Price({
+    //             symbol: ticker.symbol,
+    //             price: allLastPrices[ticker.symbol] 
+    //         });
+    //     });
+    //     return filteredPrices;
+    // }
+
+    // async getPrices_a(symbols) {
+    //     if(symbols.length === 0) {
+    //         symbols = "BTCUSDT";
+    //     }
+    //     this.client.ws.candles(symbols, '1m', candle => {
+    //         console.log(candle);
+    //         this.updateSymbolPrices(new Price({
+    //             symbol: candle.symbol,
+    //             price: candle.close
+    //         }));
+    //     });        
+    // }
