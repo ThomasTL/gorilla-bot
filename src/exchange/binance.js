@@ -63,6 +63,7 @@ class BinanceEx extends Exchange {
         return this.client.ws.allTickers(tickers => {
             const filteredTickers = tickers.filter(ticker => {
                 let filterIn = false;
+                let pipo = 0;
                 if(ticker.symbol.slice(ticker.symbol.length - quoteSymbol.length) === quoteSymbol) {
                     if(parseFloat(ticker.volumeQuote) >= quoteMinVolume) {
                         filterIn = true;

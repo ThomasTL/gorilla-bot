@@ -107,7 +107,6 @@ class StrategyRunner {
         // TODO: To store the 5 min interval in a constant or to get it from the StrategyRunner config
         if(diffMins >= 5) {
             console.log(new Date().toString());
-            console.log(`Opened positions: ${ this.openedPositions.length }, Closed positions: ${ this.closedPositions.length }`);
 
             this.lastTickTime = now;
             this.eligiblePrices = await this.exchange.getPrices(this.eligibleSymbols);
@@ -116,6 +115,7 @@ class StrategyRunner {
                     symbol: symbol
                 });
             });
+            console.log(`Opened positions: ${ this.openedPositions.length }, Closed positions: ${ this.closedPositions.length }`);
         }
     }
 

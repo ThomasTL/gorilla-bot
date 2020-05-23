@@ -5,8 +5,8 @@ console.log('\n+---------------------------------+'.white);
 console.log('|   Gorilla Signals is starting   |'.white);
 console.log('+---------------------------------+\n'.white);
 
-const quoteSymbol = 'USDT';
-const quoteMinVolume = 800000;
+const quoteSymbol = 'BTC';
+const quoteMinVolume = 75;
 const exchangeType = 'Binance';
 const strategy = {
     type: 'SimpleRebound',
