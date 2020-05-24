@@ -1,31 +1,23 @@
 const colors = require('colors');
-const ExchangeFactory = require('../exchange');
-const StrategyFactory = require('../strategy');
+const utils = require('../util');
+const Trader = require('./trader');
 const Position = require('../models/position');
 
-class StrategyRunner {
-    constructor({strategy, exchangeType}) {
-        this.exchange = new ExchangeFactory({
-            onTick: async (tickers) => { this.onTick(tickers) }, 
-            updateSymbolPrices: async (prices) => { this.updateSymbolPrices(prices) },
-            type: exchangeType
-        });
-        this.strategy = new StrategyFactory({
-            sendBuySignal: async (symbol) => { this.sendBuySignal(symbol) },
-            sendSellSignal: async (symbol) => { this.sendSellSignal(symbol) },
-            sendTradeSignal: async (symbol) => { this.sendTradeSignal(symbol) },
-            exchange: this.exchange,
-            config: strategy.config
-        }, strategy.type);
+const kEligiblePairTimeout = 60;
+
+// TODO: Re-evaluate later on, the functions that should be at the parent class level
+class PaperTrading extends Trader {
+    constructor(data) {
+        super(data);
+
+        this.currentTrades = [];
         this.openedPositions = [];
         this.closedPositions = [];
-        this.eligibleSymbols = [];
-        this.eligiblePrices = [];
+        this.tradingPairs = [];
+        this.lastSpotPrices = [];
 
-        // TODO: Remove this const out and provide as config to the constructor
-        this.mins = 60;
         const now = new Date();
-        this.lastTickTime = new Date(now.getTime() - (this.mins * 60000));
+        this.lastTickTime = new Date(now.getTime() - (kEligiblePairTimeout * 60000));
     }
 
     async run({quoteSymbol, quoteMinVolume}) {
@@ -38,18 +30,15 @@ class StrategyRunner {
         });
     }
 
-    async sendBuySignal(symbol) { 
-        // TODO: Need to remove this constant and set this as strategy config
-        const amtToInvest = 0.005;
-
+    async sendBuySignal({symbol, data}) { 
         const foundPosition = this.openedPositions.find(position => position.symbol === symbol);
-        if(typeof foundPosition === 'undefined') {
+        if(foundPosition === undefined) {
             let position = new Position(symbol);
-            const symbolPrice = this.eligiblePrices.find(price => price.symbol === symbol );
+            const symbolPrice = this.lastSpotPrices.find(price => price.symbol === symbol );
             position.openPosition({
                 date: new Date(),
                 buyPrice: symbolPrice.price,
-                volume: (amtToInvest / symbolPrice.price)
+                volume: (this.minAmtToInvest / symbolPrice.price)
             });
             this.openedPositions.push(position);
             console.log(`> BUY ${ symbol }, price: ${ symbolPrice.price }, volume: ${ (amtToInvest / symbolPrice.price) }`.green);
@@ -59,10 +48,10 @@ class StrategyRunner {
         }
     }
 
-    async sendSellSignal(symbol) {
+    async sendSellSignal({symbol, data}) {
         const foundPosition = this.openedPositions.find(position => position.symbol === symbol);
-        if(typeof foundPosition !== 'undefined') {
-            const symbolPrice = this.eligiblePrices.find(price => price.symbol === symbol);
+        if(foundPosition !== undefined) {
+            const symbolPrice = this.lastSpotPrices.find(price => price.symbol === symbol);
             foundPosition.closePosition({
                 date: new Date(),
                 sellPrice: symbolPrice.price
@@ -77,8 +66,29 @@ class StrategyRunner {
         }
     }
 
-    async sendTradeSignal(symbol) {
-        
+    async sendTradeSignal(trade) {
+        this.sendBuySignal({
+            symbol: trade.pair
+        });
+        const foundPosition = this.openedPositions.find(position => position.symbol === trade.pair);
+        trade.entryPrice = parseFloat(foundPosition.buyPrice);
+        this.currentTrades.push(trade);
+        console.log(trade.toString());
+    }
+
+    async processTrades() {
+        this.currentTrades = this.currentTrades.filter(trade => {
+            let filterIn = true;
+            const pairCurrentPrice = this.lastSpotPrices.find(price => price.symbol === trade.pair);
+            const percentTPMultiplier = (trade.takeProfit / 100) + 1;
+            if(parseFloat(pairCurrentPrice.price) >= (trade.entryPrice * percentTPMultiplier)) {
+                this.sendSellSignal({
+                    symbol: trade.pair
+                }); 
+                filterIn = false;
+            }
+            return filterIn;
+        });
     }
 
     // TODO: Getting the current prices for the pairs evaluated in the strategy should be done every second or less
@@ -90,38 +100,35 @@ class StrategyRunner {
 
         // TODO: Make sure that if there is an opened position with a pair that has been removed from the eligible pairs
         // It is actually remaining in the eligible pairs so that the strategy can find the proper exit point for it
-
-        // TODO: To store the 60 min in a constant or get it from the StrategyRunner config
-        if(diffMins >= this.mins) {
+        if(diffMins >= kEligiblePairTimeout) {
             this.lastTickTime = now;
-            this.eligibleSymbols = [];
+            this.tradingPairs = [];
             tickers.sort((a, b) =>  b.quoteVolume - a.quoteVolume );
             tickers.forEach(ticker => {
-                this.eligibleSymbols.push(ticker.symbol);
+                this.tradingPairs.push(ticker.symbol);
             });
             this.eligibleTickers = tickers;
-            console.log(`Eligible pairs for running the strategy: ${ this.eligibleSymbols.length }`);
-            console.log(this.eligibleSymbols);
+            console.log(`Eligible pairs for running the strategy: ${ this.tradingPairs.length }`);
+            console.log(this.tradingPairs);
         }
 
-        // TODO: To store the 5 min interval in a constant or to get it from the StrategyRunner config
-        if(diffMins >= 5) {
-            console.log(new Date().toString());
+        // TODO: Should update opened positions with current price 
+        this.lastSpotPrices = await this.exchange.getPrices(this.tradingPairs);
+        await this.processTrades();
 
+        if(diffMins >= utils.getPeriodMin(this.strategy.period)) {
+            console.log(new Date().toString());
             this.lastTickTime = now;
-            this.eligiblePrices = await this.exchange.getPrices(this.eligibleSymbols);
-            this.eligibleSymbols.forEach(symbol => {
+            this.tradingPairs.forEach(symbol => {
                 this.strategy.evaluate({
                     symbol: symbol
-                });
+                });             
             });
             console.log(`Opened positions: ${ this.openedPositions.length }, Closed positions: ${ this.closedPositions.length }`);
         }
     }
 
-    async updateSymbolPrices(symbolPrice) {
-        this.eligiblePrices = symbolPrice;
-    }
+    async updatePairSpotPrice(symbolPrice) {}
 }
 
-module.exports = StrategyRunner
+module.exports = PaperTrading

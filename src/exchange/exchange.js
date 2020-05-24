@@ -1,10 +1,10 @@
 
 class Exchange {
-    constructor({onTick, updateSymbolPrices}) {
+    constructor({onTick, updatePairSpotPrice}) {
         this.onTick = onTick;
-        this.updateSymbolPrices = updateSymbolPrices;
+        this.updatePairSpotPrice = updatePairSpotPrice;
     }
-    async getCandleStricks ({symbol, period, limit}) {}
+    async getCandleSticks ({symbol, period, limit}) {}
     async getTickers({quoteSymbol, minQuoteVolume}) {}
     async getPrices(tickers) {}
 }

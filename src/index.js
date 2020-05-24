@@ -1,5 +1,5 @@
 const color = require('colors');
-const StrategyRunner = require('../src/strategy-runner');
+const { PaperTrading, ZignalyTrading } = require('./trader');
 
 console.log('\n+---------------------------------+'.white);
 console.log('|   Gorilla Signals is starting   |'.white);
@@ -11,32 +11,36 @@ const exchangeType = 'Binance';
 const strategy = {
     type: 'SimpleRebound',
     config: {
-        period: '5m',
+        period: '1m',
         maxCandles: 4
     }
 }
+const minAmtInvest = 0.005;
 
 console.log(`+--------- Settings --------+`.white);
 console.log('| Quote Symbol   :'.white + ` ${ quoteSymbol }`.yellow);
 console.log('| Quote Min Vol. :'.white + ` ${ quoteMinVolume }`.yellow);
+console.log('| Min Amt. Invest:'.white + ` ${ minAmtInvest }`.yellow);
 console.log('| Strategy       :'.white + ` ${ strategy.type }`.yellow);
+console.log('| Strategy Period:'.white + ` ${ strategy.config.period }`.yellow);
 console.log('| Exchange       :'.white + ` ${ exchangeType }`.yellow);
 console.log('+---------------------------+\n'.white);
 
-strategyRunner = new StrategyRunner({
+const paperTrading = new PaperTrading({
     strategy: strategy,
-    exchangeType: exchangeType
+    exchangeType: exchangeType,
+    minAmtToInvest: minAmtInvest
 });
 
-strategyRunner.run({
+paperTrading.run({
     quoteSymbol: quoteSymbol,
     quoteMinVolume: quoteMinVolume
 });
 
 process.on('SIGINT', function() {
     console.log('\nBye bye ...'.red);
-    console.log(`Closed positions: ${ strategyRunner.closedPositions.length }`);
-    strategyRunner.closedPositions.forEach(position => {
+    console.log(`Closed positions: ${ paperTrading.closedPositions.length }`);
+    paperTrading.closedPositions.forEach(position => {
         console.log(position.toString());
     });
     process.exit();

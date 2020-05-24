@@ -1,16 +1,9 @@
 const Strategy = require('./strategy');
+const Trade = require('../models/trade');
 const util = require('../util');
 
-/*
-    Strategy needs to be given:
-    - Candles or ticker
-    Strategy will calculates
-    - Technical indicators
-    It:
-    - Sends a buy event to a position when it is time to buy 
-    - Sends a sell event to a position when it is time to sell
-    The above given the technical indicators
-*/
+const percentDump = -2;
+const percentTP = 0.5
 
 class SimpleRebound extends Strategy {
     constructor(data) {
@@ -20,6 +13,12 @@ class SimpleRebound extends Strategy {
     }
 
     async evaluate({symbol}) {
+        await this.evaluateEntry({
+            symbol: symbol
+        });
+    }
+    
+    async evaluateEntry({symbol}) {
         this.candlesticks = await this.exchange.getCandleSticks({
             symbol: symbol,
             period: this.period,
@@ -34,19 +33,32 @@ class SimpleRebound extends Strategy {
             });
 
             // Entry point is when the last candle shows a -2% dump or more
-            if(this.candlesticks[this.maxCandles-1].percentChange() <= -2) {
-                this.sendBuySignal(symbol);
-            }
- 
-            // Exit point is when the last candle shows a 1% pump or more
-            if(this.candlesticks[this.maxCandles-1].percentChange() > 1.25) { 
-                this.sendSellSignal(symbol);
+            if(this.candlesticks[this.maxCandles-1].percentChange() <= percentDump) {
+                const calculatedPercentTP = Math.abs(this.candlesticks[this.maxCandles-1].percentChange() / 2);
+                const trade = new Trade({
+                    pair: symbol,
+                    takeProfit: calculatedPercentTP
+                });
+                this.sendTradeSignal(trade);
             }
         } else {
             // TODO: Log that something went wrong with the strategy here
             console.log(`Strategy can\'t be evaluated. Pair: ${ symbol }`);
         }
-    }    
+    }
+
+    async evaluateExit({symbol}) {}
 }
 
 module.exports = SimpleRebound
+
+/*
+    Strategy needs to be given:
+    - Candles or ticker
+    Strategy will calculates
+    - Technical indicators
+    It:
+    - Sends a buy event to a position when it is time to buy 
+    - Sends a sell event to a position when it is time to sell
+    The above given the technical indicators
+*/

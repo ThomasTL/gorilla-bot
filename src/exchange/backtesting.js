@@ -17,7 +17,7 @@ class Backtesting extends Exchange {
         });
     }
 
-    async getCandleStricks ({symbol, period, limit}) {
+    async getCandleSticks({symbol, period, limit}) {
         if(typeof this.candleSticks === 'undefined'){
             this.candleSticks = await this.getCandles({
                 symbol: symbol,
