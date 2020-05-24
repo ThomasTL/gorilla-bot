@@ -26,13 +26,24 @@ console.log('| Strategy Period:'.white + ` ${ strategy.config.period }`.yellow);
 console.log('| Exchange       :'.white + ` ${ exchangeType }`.yellow);
 console.log('+---------------------------+\n'.white);
 
+const zignaly = new ZignalyTrading({
+    strategy: strategy,
+    exchangeType: exchangeType,
+    minAmtToInvest: minAmtInvest
+});
+
 const paperTrading = new PaperTrading({
     strategy: strategy,
     exchangeType: exchangeType,
     minAmtToInvest: minAmtInvest
 });
 
-paperTrading.run({
+// paperTrading.run({
+//     quoteSymbol: quoteSymbol,
+//     quoteMinVolume: quoteMinVolume
+// });
+
+zignaly.run({
     quoteSymbol: quoteSymbol,
     quoteMinVolume: quoteMinVolume
 });
