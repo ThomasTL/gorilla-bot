@@ -3,7 +3,7 @@ const Trade = require('../models/trade');
 const util = require('../util');
 
 const percentDump = -2;
-const percentTP = 0.5
+const percentTP = 0.5;
 
 class SimpleRebound extends Strategy {
     constructor(data) {
@@ -33,11 +33,14 @@ class SimpleRebound extends Strategy {
             });
 
             // Entry point is when the last candle shows a -2% dump or more
+            // TODO: Check for RSI <= 30 to trigger the trade
             if(this.candlesticks[this.maxCandles-1].percentChange() <= percentDump) {
-                const calculatedPercentTP = Math.abs(this.candlesticks[this.maxCandles-1].percentChange() / 2);
+                const calculatedPercentTP = Math.abs(this.candlesticks[this.maxCandles-1].percentChange() * percentTP);
                 const trade = new Trade({
                     pair: symbol,
-                    takeProfit: calculatedPercentTP
+                    entryPrice: this.candlesticks[this.maxCandles-1].close,
+                    takeProfit: calculatedPercentTP,
+                    takeProfitVolume: 100
                 });
                 this.sendTradeSignal(trade);
             }

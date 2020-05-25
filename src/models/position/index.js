@@ -1,8 +1,9 @@
 const util = require('../../util');
 
 class Position {
-    constructor(symbol) {
+    constructor(symbol, uuid) {
         this.symbol = symbol;
+        this.uuid = uuid;
 
         this.currentPnL = 0;
         this.realisedPnL = 0;

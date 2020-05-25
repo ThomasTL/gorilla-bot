@@ -14,7 +14,9 @@
   "author": "Thomas Tarpin-Lyonnet",
   "license": "MIT",
   "dependencies": {
+    "axios": "^0.19.2",
     "binance-api-node": "^0.9.19",
-    "colors": "^1.4.0"
+    "colors": "^1.4.0",
+    "uuid": "^8.1.0"
   }
 }
