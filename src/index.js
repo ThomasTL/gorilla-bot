@@ -5,8 +5,8 @@ console.log('\n+---------------------------------------------------------------+
 console.log('|                  Gorilla Signals is starting                  |'.white.inverse);
 console.log('+---------------------------------------------------------------+\n'.white.inverse);
 
-const signalProviderKey = "518cd31df66bb47e258a0551a4c565eb";
-//const signalProviderKey = "93e28ae740aab82fc8d4761159c636f8"; // Prod signal provider key
+const signalProviderKey = "YOUR_ZIGNALY_SIGNAL_PROVIDER_KEY_HERE";
+
 const quoteSymbol = 'BTC';
 const quoteMinVolume = 70;
 const exchangeType = 'Binance';
