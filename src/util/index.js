@@ -33,10 +33,11 @@ module.exports = {
         }
         return (value * multiplier);
     },
-    
-    /* ,
-    timeout: async (seconds) => {
-        const ms = seconds * 1000;
-        return new Promise(resolve => setTimeout(resolve, ms))
-    } */
+    isQuoteSymbol: (symbol, quote) => {
+        let isQuote = false;
+        if(symbol.slice(symbol.length - quote.length) === quote) {
+            isQuote = true;
+        }
+        return isQuote;
+    },
 }

@@ -1,5 +1,4 @@
 const colors = require('colors');
-const utils = require('../util');
 const Trader = require('./trader');
 const Position = require('../models/position');
 

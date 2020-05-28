@@ -2,24 +2,10 @@ const axios = require('axios');
 const querystring = require('querystring');
 const config = require('../config');
 
-const signalProviderKey = config.get('ZIGNALY_SIGNAL_PROVIDER_KEY');
 const zignalyAPIUrl = config.get('ZIGNALY_API_URL');
 const defaultExchange = 'binance';
 const typeBuy = 'buy';
 const typeSell = 'sell';
-
-const data = {
-    key: '518cd31df66bb47e258a0551a4c565eb',
-    type: 'buy', 
-    pair: 'BTCUSDT', 
-    exchange: 'binance',
-    signalId: '12345678901', 
-    price: 9160,
-    takeProfitAmountPercentage1: 100,
-    takeProfitPercentage1: 1.25
-};
-
-const pipoData = querystring.stringify(data);
 
 // curl -d key=518cd31df66bb47e258a0551a4c565eb 
 //      -d type=buy 
@@ -29,32 +15,60 @@ const pipoData = querystring.stringify(data);
 //      -d price=9160 
 //      -d takeProfitAmountPercentage1=100
 //      -d takeProfitPercentage1=1.25
+//      -d stopLossPercentage: -5
+//      -d takeProfitPrice1
+//      -d stopLossPercentage
+//      -d stopLoss
 //      https://zignaly.com/api/signals.php
 
-
-class ZignalySignals {
-    constructor() {}
+class ZignalySignal {
+    constructor({signalProviderKey}) {
+        this.signalProviderKey = signalProviderKey;
+    }
 
     buySignal(data) {
+        // TODO: check if takeProfitAmountPercentage1 is set then remove takeProfitPrice1
+        // TODO: Same as above for StopLossPercentage
+        //if(takeProfitAmountPercentage1)
         const params = {
-            key: signalProviderKey,
+            key: this.signalProviderKey,
             type: typeBuy, 
             pair: data.symbol, 
             exchange: defaultExchange,
             signalId: data.uuid, 
             price: data.price,
             takeProfitAmountPercentage1: data.tpVolume,
-            takeProfitPercentage1: data.tpPercent
+            takeProfitPrice1: data.tpPrice,
+            takeProfitPercentage1: data.tpPercent,
+            stopLoss: data.slPrice
         };
+        this.sendSignal(params);       
+    }
+
+    sellSignal(data) {
+        const params = {
+            key: this.signalProviderKey,
+            type: typeSell, 
+            pair: data.symbol, 
+            signalId: data.uuid,
+            exchange: defaultExchange,
+            price: data.price,
+            orderType: 'limit'
+        };
+        this.sendSignal(params);          
+    }
+
+    sendSignal(params) {
         const querystr = querystring.stringify(params);
+        console.log(`QueryString: ${querystr}`);
         axios.post(zignalyAPIUrl, querystr)
         .then(function (response) {
-            console.log(response);
+            console.log(`HTTP ${response.status} - ${response.statusText} - ${response.config.method}`);
         })
         .catch(function (error) {
             console.log(error);
-        });        
+        });         
     }
 }
 
-module.exports = ZignalySignals
+module.exports = ZignalySignal

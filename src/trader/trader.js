@@ -1,7 +1,8 @@
+const utils = require('../util');
 const ExchangeFactory = require('../exchange');
 const StrategyFactory = require('../strategy');
 
-const kEligiblePairTimeout = 60;
+const kEligiblePairTimeout = 1440;
 
 class Trader {
     constructor(data) {
@@ -22,7 +23,8 @@ class Trader {
         this.tradingPairs = [];
         this.lastSpotPrices = [];
         const now = new Date();
-        this.lastTickTime = new Date(now.getTime() - (kEligiblePairTimeout * 60000));          
+        this.lastPairUpdTime = new Date(now.getTime() - (kEligiblePairTimeout * 60000));
+        this.lastStgyEvalTime = this.lastPairUpdTime;         
     }
 
     async sendBuySignal({symbol, data}) {}
@@ -45,17 +47,20 @@ class Trader {
     // Should be using a web socket instead of getting the prices from a common API.
     async onTick(tickers) {
         const now = new Date();
-        const diffMs = now - this.lastTickTime
-        const diffMins = Math.floor(diffMs/60000);
+        let diffMs = now - this.lastPairUpdTime
+        let diffMins = Math.floor(diffMs/60000);
 
+        // BUG: Need to use something else than this.lastPairUpdTime for refreshing the eligible pairs every hour
         // TODO: Make sure that if there is an opened position with a pair that has been removed from the eligible pairs
         // It is actually remaining in the eligible pairs so that the strategy can find the proper exit point for it
         if(diffMins >= kEligiblePairTimeout) {
-            this.lastTickTime = now;
+            this.lastPairUpdTime = now;
             this.tradingPairs = [];
             tickers.sort((a, b) =>  b.quoteVolume - a.quoteVolume );
             tickers.forEach(ticker => {
-                this.tradingPairs.push(ticker.symbol);
+                if((ticker.symbol !== 'BTCDOWNUSDT') && (ticker.symbol !== 'BTCUPUSDT')) {
+                    this.tradingPairs.push(ticker.symbol);
+                }
             });
             console.log(`Eligible pairs for running the strategy: ${ this.tradingPairs.length }`);
             console.log(this.tradingPairs);
@@ -65,15 +70,16 @@ class Trader {
         this.lastSpotPrices = await this.exchange.getPrices(this.tradingPairs);
         await this.processTrades();
 
+        diffMs = now - this.lastStgyEvalTime
+        diffMins = Math.floor(diffMs/60000);
         if(diffMins >= utils.getPeriodMin(this.strategy.period)) {
             console.log(new Date().toString());
-            this.lastTickTime = now;
+            this.lastStgyEvalTime = now;
             this.tradingPairs.forEach(symbol => {
                 this.strategy.evaluate({
                     symbol: symbol
                 });             
             });
-            //console.log(`Opened positions: ${ this.openedPositions.length }, Closed positions: ${ this.closedPositions.length }`);
         }
     }       
 }

@@ -49,21 +49,22 @@ class Position {
         let soldAmt = util.defaultIfNan(this.soldAmt, 0);
         let realisedPnL = util.defaultIfNan(this.realisedPnL, 0);
 
-        let string = '\n------------------------------------------------------';
+        let string = '------------------------------------------------------';
         string += '\n+ Symbol';
         string += `\n+--- ${ this.symbol }`;
+        string += `\n+--- uuid: ${ this.uuid }`;
         string += '\n+ Entry';
         string += `\n+--- Date             : ${ entryDate }`;
-        string += `\n+--- Buy price        : ${ buyPrice }`;
+        string += `\n+--- Buy price        : ${ buyPrice.toFixed(8) }`;
         string += `\n+--- Volume           : ${ volumeBase }`;
         string += `\n+--- Amount           : ${ boughtAmt.toFixed(8) }`;
         string += '\n+ Current';
-        string += `\n+--- Current price    : ${ currentPrice }`;
+        string += `\n+--- Current price    : ${ currentPrice.toFixed(8) }`;
         string += `\n+--- Current P&L      : ${ currentPnL.toFixed(8) }`;
         string += `\n+--- Current P&L (%)  : ${ this.getCurrentPercentPnL().toFixed(2) } %`;  
         string += '\n+ Exit';
         string += `\n+--- Date             : ${ exitDate }`;
-        string += `\n+--- Sell price       : ${ sellPrice }`;
+        string += `\n+--- Sell price       : ${ sellPrice.toFixed(8) }`;
         string += `\n+--- Volume           : ${ volumeBase }`;
         string += `\n+--- Amount           : ${ soldAmt.toFixed(8) }`;
         string += `\n+--- Realised P&L     : ${ realisedPnL.toFixed(8) }`;

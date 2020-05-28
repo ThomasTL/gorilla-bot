@@ -5,21 +5,24 @@ console.log('\n+---------------------------------------------------------------+
 console.log('|                  Gorilla Signals is starting                  |'.white.inverse);
 console.log('+---------------------------------------------------------------+\n'.white.inverse);
 
-const quoteSymbol = 'USDT';
-const quoteMinVolume = 700000;
+const signalProviderKey = "518cd31df66bb47e258a0551a4c565eb";
+//const signalProviderKey = "93e28ae740aab82fc8d4761159c636f8"; // Prod signal provider key
+const quoteSymbol = 'BTC';
+const quoteMinVolume = 70;
 const exchangeType = 'Binance';
 const strategy = {
-    type: 'SimpleRebound',
+    type: 'OneSat',
     config: {
         period: '1m',
         maxCandles: 4
     }
 }
-const minAmtInvest = 40;
+const minAmtInvest = 0.005;
 const traderType = "zignaly";
 
 console.log(`+------------ Settings -----------+`.white);
 console.log('| Trade Type     :'.white + ` ${ traderType }`.yellow);
+console.log('| Provider key   :'.white + ` ${ signalProviderKey }`.yellow);
 console.log('| Quote Symbol   :'.white + ` ${ quoteSymbol }`.yellow);
 console.log('| Quote Min Vol. :'.white + ` ${ quoteMinVolume }`.yellow);
 console.log('| Min Amt. Invest:'.white + ` ${ minAmtInvest }`.yellow);
@@ -31,7 +34,8 @@ console.log('+---------------------------------+\n'.white);
 const zignaly = new ZignalyTrading({
     strategy: strategy,
     exchangeType: exchangeType,
-    minAmtToInvest: minAmtInvest
+    minAmtToInvest: minAmtInvest,
+    signalProviderKey: signalProviderKey
 });
 
 const paperTrading = new PaperTrading({
@@ -58,11 +62,11 @@ if(traderType === "paper") {
 process.on('SIGINT', function() {
     console.log('\nBye bye ...'.red);
     if(trader !== undefined) {
-        console.log(`Opened positions: ${ trader.openedPositions.length }`);
+        console.log(`\nOpened positions: ${ trader.openedPositions.length }`);
         trader.openedPositions.forEach(position => {
             console.log(position.toString());
         });   
-        console.log(`Closed positions: ${ trader.closedPositions.length }`);
+        console.log(`\nClosed positions: ${ trader.closedPositions.length }`);
         trader.closedPositions.forEach(position => {
             console.log(position.toString());
         });  
