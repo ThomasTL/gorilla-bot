@@ -2,14 +2,13 @@ const Strategy = require('./strategy');
 const Trade = require('../models/trade');
 const util = require('../util');
 
-const percentDump = -2;
-const percentTP = 0.75;
-
 class SimpleRebound extends Strategy {
     constructor(data) {
         super(data);
         this.period = data.config.period;
         this.maxCandles = data.config.maxCandles;
+        this.percentDump = data.config.percentDump;
+        this.tpRatio = data.config.tpRatio;
     }
 
     async evaluate({symbol}) {
@@ -34,8 +33,8 @@ class SimpleRebound extends Strategy {
 
             // Entry point is when the last candle shows a -2% dump or more
             // TODO: Check for RSI <= 30 to trigger the trade
-            if(candlesticks[this.maxCandles-1].percentChange() <= percentDump) {
-                let calculatedPercentTP = Math.abs(candlesticks[this.maxCandles-1].percentChange() * percentTP);
+            if(candlesticks[this.maxCandles-1].percentChange() <= this.percentDump) {
+                let calculatedPercentTP = Math.abs(candlesticks[this.maxCandles-1].percentChange() * this.tpRatio);
                 // TODO: Below test only works for BTC. Need to generalise to any coin
                 if(((candlesticks[this.maxCandles-1].close * calculatedPercentTP) / 100) < 0.00000001) {
                     calculatedPercentTP = (0.00000001 / candlesticks[this.maxCandles-1].close) * 100;

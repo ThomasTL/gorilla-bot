@@ -1,24 +1,30 @@
 const color = require('colors');
-const { PaperTrading, ZignalyTrading } = require('./trader');
+const { PaperTrading, ZignalyTrading } = require('./src/trader');
+const figlet = require('figlet');
 
-console.log('\n+---------------------------------------------------------------+'.white.inverse);
-console.log('|                  Gorilla Signals is starting                  |'.white.inverse);
-console.log('+---------------------------------------------------------------+\n'.white.inverse);
+// Other nice fonts: 'DOS Rebel','Ticks Slant'
+console.log('\n' + figlet.textSync('Gorilla Bot', {
+    font: 'Big Money-ne',
+    horizontalLayout: 'default',
+    verticalLayout: 'default'
+}));
 
-const signalProviderKey = "YOUR_ZIGNALY_SIGNAL_PROVIDER_KEY_HERE";
+//const signalProviderKey = "YOUR_ZIGNALY_SIGNAL_PROVIDER_KEY_HERE";
 
 const quoteSymbol = 'BTC';
-const quoteMinVolume = 70;
+const quoteMinVolume = 200;
 const exchangeType = 'Binance';
 const strategy = {
-    type: 'OneSat',
+    type: 'SimpleRebound',
     config: {
         period: '1m',
-        maxCandles: 4
+        maxCandles: 4,
+        percentDump: -0.1,
+        tpRatio: 0.75
     }
 }
 const minAmtInvest = 0.005;
-const traderType = "zignaly";
+const traderType = "paper";
 
 console.log(`+------------ Settings -----------+`.white);
 console.log('| Trade Type     :'.white + ` ${ traderType }`.yellow);
@@ -26,10 +32,10 @@ console.log('| Provider key   :'.white + ` ${ signalProviderKey }`.yellow);
 console.log('| Quote Symbol   :'.white + ` ${ quoteSymbol }`.yellow);
 console.log('| Quote Min Vol. :'.white + ` ${ quoteMinVolume }`.yellow);
 console.log('| Min Amt. Invest:'.white + ` ${ minAmtInvest }`.yellow);
-console.log('| Strategy       :'.white + ` ${ strategy.type }`.yellow);
-console.log('| Strategy Period:'.white + ` ${ strategy.config.period }`.yellow);
 console.log('| Exchange       :'.white + ` ${ exchangeType }`.yellow);
 console.log('+---------------------------------+\n'.white);
+
+console.log(strategy);
 
 const zignaly = new ZignalyTrading({
     strategy: strategy,
