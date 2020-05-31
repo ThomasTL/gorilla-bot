@@ -1,6 +1,6 @@
 const colors = require('colors');
 const Trader = require('./trader');
-const ZignalySignal = require('../service');
+const ZignalySignal = require('../service-broker');
 const Position = require('../models/position');
 
 class ZignalyTrading extends Trader {
